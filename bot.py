@@ -2,32 +2,31 @@
 import os
 import asyncio
 import logging
-
 from aiogram import Bot, Dispatcher
-
+from aiogram.enums.parse_mode import ParseMode
+from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.utils.chat_action import ChatActionMiddleware
 
 from dotenv import load_dotenv
-
-from handlers import group_games, usernames, checkin
-from .middlewares.weekend import WeekendCallbackMiddleware
 
 load_dotenv()
 
 from config_reader import config
+from handlers import start, blockchain, exchanger, all_data, other
 
 
 # Запуск процесса поллинга новых апдейтов
 async def main():
-    bot = Bot(token=config.bot_token.get_secret_value())
-    dp = Dispatcher()
+    bot = Bot(token=config.bot_token.get_secret_value(), parse_mode=ParseMode.HTML)
+    dp = Dispatcher(storage=MemoryStorage())
 
-    dp.include_router(group_games.router)
-    dp.include_router(usernames.router)
-    dp.include_router(checkin.router)
-    dp.callback_query.outer_middleware(WeekendCallbackMiddleware())
+    dp.include_router(start.router)
+    dp.include_router(blockchain.router)
+    dp.include_router(exchanger.router)
+    dp.include_router(all_data.router)
+    dp.include_router(other.router)
 
-    # Запускаем бота и пропускаем все накопленные входящие
-    # Да, этот метод можно вызвать даже если у вас поллинг
+    dp.message.middleware(ChatActionMiddleware())
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
