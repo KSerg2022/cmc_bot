@@ -13,10 +13,12 @@ from utils.pretty_table import get_table
 
 router = Router()
 
-url = 'http://localhost:8000/'
+# url = 'http://localhost:8000/'
+url = 'http://web-cmc:8000/'
 
-blockchain_portfolio = 'api/bot/blockchain-portfolio/'  #  'api/bot/blockchain-portfolio/<str:tel_username>/'
-blockchain_portfolio_data_for_user = 'api/bot/blockchain/data/'  #  api/bot/blockchain/data/<int:blockchain_id>/<str:tel_username>/
+blockchain_portfolio = 'api/bot/blockchain-portfolio/'
+#  blockchain_portfolio_list - 'api/bot/blockchain-portfolio/<str:tel_username>/'
+#  blockchain_portfolio_data_for_user - api/bot/blockchain/data/<int:blockchain_id>/<str:tel_username>/
 
 
 @router.message(Text("Blockchain"))
@@ -30,7 +32,7 @@ async def blockchain(message: types.Message, state: FSMContext):
 
 
 async def get_blockchain(telegram_username):
-    response = requests.get(f'{url}{blockchain_portfolio}{telegram_username}', auth=('Sergey', '!qa2ws3ed'))
+    response = requests.get(f'{url}{blockchain_portfolio}{telegram_username}/', auth=('Sergey', '!qa2ws3ed'))
     data = response.json()
     return data
 
@@ -46,7 +48,7 @@ async def blockchain_data(clbck: CallbackQuery, state: FSMContext):
 
 async def get_blockchain_data(blockchain_id, telegram_username):
 
-    response = requests.get(f'{url}{blockchain_portfolio_data_for_user}{blockchain_id}/{telegram_username}',
+    response = requests.get(f'{url}{blockchain_portfolio}{blockchain_id}/{telegram_username}',
                             auth=('Sergey', '!qa2ws3ed'))
     data = response.json()
     data = get_table(data)
