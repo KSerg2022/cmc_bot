@@ -29,7 +29,9 @@ async def blockchain(message: types.Message):
 
 
 async def get_all_data(telegram_username):
-    response = requests.get(f'{url}{all_data}{telegram_username}', auth=('Sergey', '!qa2ws3ed'))
+    headers = {'TEL-USERNAME': telegram_username}
+    response = requests.get(f'{url}{all_data}',
+                            headers=headers)
     data = response.json()
     tables = get_table_all_data(data)
     return tables

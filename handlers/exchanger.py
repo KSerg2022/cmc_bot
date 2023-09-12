@@ -18,8 +18,7 @@ router = Router()
 url = 'http://web-cmc:8000/'
 
 exchanger_portfolio = 'api/bot/exchanger-portfolio/'
-#  exchanger_portfolio_list - 'api/bot/exchanger-portfolio/<str:tel_username>/'
-#  exchanger_portfolio_data_for_user - 'api/bot/exchanger-portfolio/<int:exchanger_id>/<str:tel_username>/'
+exchanger_portfolio_data = 'api/bot/exchanger-portfolio-data/'
 
 
 @router.message(F.text == "Exchanger")
@@ -33,7 +32,9 @@ async def exchanger(message: types.Message, state: FSMContext):
 
 
 async def get_exchanger(telegram_username):
-    response = requests.get(f'{url}{exchanger_portfolio}{telegram_username}/', auth=('Sergey', '!qa2ws3ed'))
+    headers = {'TEL-USERNAME': telegram_username}
+    response = requests.get(f'{url}{exchanger_portfolio}',
+                            headers=headers)
     data = response.json()
     return data
 
@@ -48,8 +49,10 @@ async def exchanger_data(clbck: CallbackQuery, state: FSMContext):
 
 
 async def get_exchanger_data(exchanger_id, telegram_username):
-    response = requests.get(f'{url}{exchanger_portfolio}{exchanger_id}/{telegram_username}',
-                            auth=('Sergey', '!qa2ws3ed'))
+    headers = {'TEL-USERNAME': telegram_username,
+               'USER-PORTFOLIO-ID': exchanger_id}
+    response = requests.get(f'{url}{exchanger_portfolio_data}',
+                            headers=headers)
     data = response.json()
     data = get_table(data)
     return f'<pre>{data}</pre>'

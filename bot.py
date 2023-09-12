@@ -17,7 +17,6 @@ from config_reader import config
 from handlers import start, blockchain, exchanger, all_data, other
 
 
-# Запуск процесса поллинга новых апдейтов
 async def main():
     bot = Bot(token=config.bot_token.get_secret_value(), parse_mode=ParseMode.HTML)
     dp = Dispatcher(storage=MemoryStorage())
