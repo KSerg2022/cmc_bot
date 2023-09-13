@@ -1,3 +1,5 @@
+import os
+
 import requests
 from pprint import pprint
 
@@ -20,7 +22,8 @@ all_data = 'api/bot/data-all/'  #  'api/bot/data-all/<str:tel_username>/'
 
 @router.message(Text("All data"))
 async def blockchain(message: types.Message):
-    tables = await get_all_data(telegram_username=message.from_user.username)
+    tables = await get_all_data(telegram_username=message.from_user.username,
+                                chat_id=message.chat.id)
 
     await message.answer(f'Total amount: {len(tables)}')
     for name, table in tables.items():
@@ -28,8 +31,12 @@ async def blockchain(message: types.Message):
     await message.answer('All tables printed.')
 
 
-async def get_all_data(telegram_username):
-    headers = {'TEL-USERNAME': telegram_username}
+async def get_all_data(telegram_username, chat_id):
+    headers = {'TEL-USERNAME': telegram_username,
+               'BOT-NAME': os.environ.get('BOTNAME'),
+               'USER-NAME': os.environ.get('USERNAME'),
+               'CHAT-ID': str(chat_id),
+               }
     response = requests.get(f'{url}{all_data}',
                             headers=headers)
     data = response.json()

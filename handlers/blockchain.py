@@ -1,3 +1,5 @@
+import os
+
 import requests
 
 from aiogram import types, F, Router, flags
@@ -21,12 +23,10 @@ blockchain_portfolio_data = 'api/bot/blockchain-portfolio-data/'
 json = JsonFile()
 
 
-
-
-
 @router.message(Text("Blockchain"))
 async def blockchain(message: types.Message, state: FSMContext):
-    data = await get_blockchain(telegram_username=message.from_user.username)
+    data = await get_blockchain(telegram_username=message.from_user.username,
+                                chat_id=message.chat.id)
     builder_kb = kb_blockchain(data)
 
     await state.set_state(Gen.blockchain)
@@ -34,19 +34,12 @@ async def blockchain(message: types.Message, state: FSMContext):
     await message.answer('Чтобы выйти из диалога Blockchain нажмите на кнопку ниже', reply_markup=kb_exit)
 
 
-# from requests.auth import AuthBase
-# class BotAuth(AuthBase):
-#     """Attaches HTTP Pizza Authentication to the given Request object."""
-#     def __init__(self, tel_username):
-#         self.username = tel_username
-#
-#     def __call__(self, r):
-#         r.headers['Authorization'] = self.username
-#         return r
-
-
-async def get_blockchain(telegram_username):
-    headers = {'TEL-USERNAME': telegram_username}
+async def get_blockchain(telegram_username, chat_id):
+    headers = {'TEL-USERNAME': telegram_username,
+               'BOT-NAME': os.environ.get('BOTNAME'),
+               'USER-NAME': os.environ.get('USERNAME'),
+               'CHAT-ID': str(chat_id),
+               }
     response = requests.get(f'{url}{blockchain_portfolio}',
                             headers=headers,
                             )
@@ -57,15 +50,22 @@ async def get_blockchain(telegram_username):
 @flags.chat_action("typing")
 @router.callback_query(F.data, Gen.blockchain)
 async def blockchain_data(clbck: CallbackQuery, state: FSMContext):
-    data = await get_blockchain_data(blockchain_id=clbck.data, telegram_username=clbck.message.chat.username)
-    builder_kb = kb_blockchain(await get_blockchain(telegram_username=clbck.message.chat.username))
+    data = await get_blockchain_data(blockchain_id=clbck.data,
+                                     telegram_username=clbck.message.chat.username,
+                                     chat_id=clbck.message.chat.id)
+    builder_kb = kb_blockchain(await get_blockchain(telegram_username=clbck.message.chat.username,
+                                                    chat_id=clbck.message.chat.id))
 
     await clbck.message.answer(str(data), reply_markup=builder_kb.as_markup())
 
 
-async def get_blockchain_data(blockchain_id, telegram_username):
+async def get_blockchain_data(blockchain_id, telegram_username, chat_id):
     headers = {'TEL-USERNAME': telegram_username,
-               'USER-PORTFOLIO-ID': blockchain_id}
+               'USER-PORTFOLIO-ID': blockchain_id,
+               'BOT-NAME': os.environ.get('BOTNAME'),
+               'USER-NAME': os.environ.get('USERNAME'),
+               'CHAT-ID': str(chat_id),
+               }
     response = requests.get(f'{url}{blockchain_portfolio_data}',
                             headers=headers)
     data = response.json()
